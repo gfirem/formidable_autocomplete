@@ -17,11 +17,26 @@ class FormidableAutoCompleteField {
 			add_filter( 'frm_display_field_options', array( $this, 'add_formidable_key_field_display_options' ) );
 			add_filter( "frm_validate_field_entry", array( $this, "validate_frm_entry" ), 10, 3 );
 			add_filter( 'frmpro_fields_replace_shortcodes', array( $this, 'replace_shortcode' ), 10, 4 );
-			
+			add_filter( 'frm_field_classes', array( $this, 'fields_class' ), 10, 2 );
 		}
 	}
-	
-	
+
+	/**
+	 * Add class to the field
+	 *
+	 * @param $classes
+	 * @param $field
+	 *
+	 * @return string
+	 */
+	public function fields_class( $classes, $field ) {
+		if ( $field["type"] == 'autocomplete' ) {
+			$classes .= ' fma_field ';
+		}
+
+		return $classes;
+	}
+
 	/**
 	 * Add new field to formidable list of fields
 	 *

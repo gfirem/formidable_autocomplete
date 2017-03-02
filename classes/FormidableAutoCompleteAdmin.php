@@ -19,6 +19,7 @@ class FormidableAutoCompleteAdmin {
 		//Get autocomplete row fields
 		add_action( "wp_ajax_nopriv_get_autocomplete_row", array( $this, "get_autocomplete_row" ) );
 		add_action( "wp_ajax_get_autocomplete_row", array( $this, "get_autocomplete_row" ) );
+
 	}
 
 	/**
@@ -270,8 +271,8 @@ class FormidableAutoCompleteAdmin {
 			if ( ! empty( $watch ) && count( $watch ) > 0 ) {
 				foreach ( $watch as $k => $i ) {
 					if ( ! empty( $i ) ) {
-						$target               = FrmField::getOne( $i );
-						$target_id            = "field_" . $target->field_key;
+						$target                 = FrmField::getOne( $i );
+						$target_id              = "field_" . $target->field_key;
 						$result[ $target_id ][] = $i;
 					}
 				}
