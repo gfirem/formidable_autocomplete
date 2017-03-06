@@ -58,11 +58,36 @@ jQuery(document).ready(function ($) {
         }
 
         var triggerFieldArgs = formidable_autocomplete_field.dependant_fields[field_id];
+        var currentTargetField = $("[name='item_meta[" + triggerFieldArgs.fieldId + "]']").attr("target_field");  
+        var currentTargetForm = $("[name='item_meta[" + triggerFieldArgs.fieldId + "]']").attr("target_form");  
+        var parentsVal = $("[name='item_meta[" + triggerFieldArgs.fieldId + "]']").val();
+        for (var i = 0; i < triggerFieldArgs.dependents.length; i++) {
+           
+       
+         jQuery.ajax({
+                type:'GET',
+                url:frm_js.ajax_url,
+                data:{
+                    action:'get_autocomplete_line',
+                    parent_fields:currentTargetField,
+                    parent_vals:parentsVal,
+                    field_id:triggerFieldArgs.dependents[i ],
+                    target_form : currentTargetForm,
+                    index:i,
+                    nonce:frm_js.nonce
+                },
+                success:function(newOptions){
+                    //replaceSelectLookupFieldOptions( childFieldArgs.fieldKey, childSelect, newOptions );
+                       var newOptionParese = JSON.parse(newOptions);
+                    $("[name='item_meta[" + triggerFieldArgs.dependents_id[newOptionParese.index] + "]']").val(newOptionParese.value);
+                }
+            });
+          }
 
         var parentRepeatArgs = getRepeatArgsFromFieldName( changedInput[0].name );
 
         for ( var i = 0, l = triggerFieldArgs.length; i < l; i++ ) {
-            updateWatchingFieldById( triggerFieldArgs[ i ], parentRepeatArgs, originalEvent );
+            updateWatchingFieldById(  i ,field_id, parentRepeatArgs, originalEvent );
         }
     }
 
@@ -74,8 +99,8 @@ jQuery(document).ready(function ($) {
      * @param {Object} parentRepeatArgs
      * @param {string} originalEvent
      */
-    function updateWatchingFieldById(field_id, parentRepeatArgs, originalEvent ) {
-        var childFieldArgs = getLookupArgsForSingleField( field_id );
+    function updateWatchingFieldById(index,field_id, parentRepeatArgs, originalEvent ) {
+        var childFieldArgs = getLookupArgsForSingleField( index,field_id );
 
         // If lookup field has no parents, no need to update this field
         if ( childFieldArgs === false || childFieldArgs.parents.length < 1 ) {
@@ -144,7 +169,7 @@ jQuery(document).ready(function ($) {
      * @param {string} field_id
      * @return {boolean|Object}
      */
-    function getLookupArgsForSingleField( field_id ) {
+    function getLookupArgsForSingleField( index,field_id ) {
         if ( typeof formidable_autocomplete_field.dependant_fields  === 'undefined' || typeof formidable_autocomplete_field.dependant_fields[field_id] === 'undefined' ) {
             return false;
         }

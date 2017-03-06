@@ -20,6 +20,9 @@ class FormidableAutoCompleteAdmin {
 		add_action( "wp_ajax_nopriv_get_autocomplete_row", array( $this, "get_autocomplete_row" ) );
 		add_action( "wp_ajax_get_autocomplete_row", array( $this, "get_autocomplete_row" ) );
 
+		add_action( "wp_ajax_nopriv_get_autocomplete_line", array( $this, "get_autocomplete_line" ) );
+		add_action( "wp_ajax_get_autocomplete_line", array( $this, "get_autocomplete_line" ) );
+
 	}
 
 	/**
@@ -231,7 +234,34 @@ class FormidableAutoCompleteAdmin {
 
 		return $form_fields;
 	}
+	public function get_autocomplete_line(){
+		global $wpdb;
+		check_ajax_referer( 'frm_ajax', 'nonce' );
+		
+		$result = new stdClass();
+		if ( ! empty( $_GET["parent_fields"] ) && ! empty( $_GET["parent_vals"] ) && ! empty( $_GET["field_id"] ) && ! empty( $_GET["target_form"] ) ) {
+			$index = $_GET["index"];
+			$parent_fields = $_GET["parent_fields"];
+			$parent_vals = $_GET["parent_vals"];
+			$field_id = $_GET["field_id"];
+			$target_form = $_GET["target_form"];
+			
 
+			$query= "SELECT em.item_id FROM ".$wpdb->prefix."frm_item_metas em INNER JOIN ".$wpdb->prefix."frm_items e ON (e.id=em.item_id) WHERE  e.form_id= ".$target_form. " AND e.is_draft=0 AND em.field_id=".$parent_fields." AND em.meta_value='".$parent_vals."'";
+			$db_getStartValue   = $wpdb->get_results( $query );
+			$start_filter= $db_getStartValue[0]->item_id;
+			$finalQuery = "SELECT em.meta_value FROM ".$wpdb->prefix."frm_item_metas em INNER JOIN ".$wpdb->prefix."frm_items e ON (e.id=em.item_id) WHERE  e.form_id=".$target_form." AND e.is_draft=0 AND em.field_id=".$field_id." AND e.id in ('".$start_filter."')";
+			$db_result = $wpdb->get_results( $finalQuery );
+			$result ->value = $db_result[0]->meta_value;
+			$result ->index = $index;
+
+		}
+
+		
+		echo json_encode( $result);
+		wp_die();
+
+	}
 	public function get_autocomplete_row() {
 		check_ajax_referer( 'frm_ajax', 'nonce' );
 
@@ -276,8 +306,9 @@ class FormidableAutoCompleteAdmin {
 	 * @return array
 	 */
 	public static function get_dependant_fields( $field ) {
+	
 		$parent_form_id = isset( $field['parent_form_id'] ) ? $field['parent_form_id'] : $field['form_id'];
-
+     
 		if ( $parent_form_id == $field['form_id'] ) {
 			// If the current field's form ID matches $form_id, only get fields in that form (not embedded or repeating)
 			$inc_repeating = 'exclude';
@@ -289,22 +320,63 @@ class FormidableAutoCompleteAdmin {
 		$auto_complete_fields      = FrmField::get_all_for_form( $parent_form_id, '', 'include', $inc_repeating );
 		$auto_populate_field_types = FrmProLookupFieldsController::get_autopopulate_field_types();
 		$result                    = array();
+		$children_id = array();
+		$children = array();
+
 		foreach ( $auto_complete_fields as $key => $item ) {
 			if ( ! in_array( $item->type, $auto_populate_field_types ) ) {
 				continue;
 			}
 			$watch = FrmField::get_option( $item, "fac_watch_lookup" );
+			$depende =FrmField::get_option( $item, "fac_get_values_field" );
 			if ( ! empty( $watch ) && count( $watch ) > 0 ) {
+				
 				foreach ( $watch as $k => $i ) {
 					if ( ! empty( $i ) ) {
+
 						$target                 = FrmField::getOne( $i );
 						$target_id              = "field_" . $target->field_key;
-						$result[ $target_id ][] = $i;
+						
+						$temporal = json_encode($item);
+						$tmp = json_decode($temporal);
+						$otro =get_object_vars($tmp);
+						foreach($otro as $propierties=>$val){
+                          if($propierties=='id'){
+                          		$children_id[] =$val;
+
+                          }
+                          
+
+                       }
+                       $children[]=$depende;
+
+						
+					
+
+						//$result[ $target_id ][] = $i;
+						$result[ $target_id  ]['fieldId'] = $field['id'];
+						$result[ $target_id  ]['fieldKey'] = $field['field_key'];						
+						$result[ $target_id  ]['fieldType'] = $field['original_type'];
+						$result[ $target_id  ]['formId'] = $field['parent_form_id'];
+						$result[ $target_id  ]['dependents'] = $children;
+						$result[ $target_id  ]['dependents_id'] = $children_id;
+			
+
+		
 					}
 				}
 			}
 		}
-
+ 
 		return $result;
 	}
+	private static function maybe_initialize_frm_vars_lookup_fields_for_id( $field_id, &$frm_vars ) {
+
+		if ( ! isset( $frm_vars[ $field_id ] ) ) {
+			$frm_vars[ $field_id ] = array(
+				'dependents' => array()
+			);
+		}
+	}
+	
 }
