@@ -167,7 +167,7 @@ class FormidableAutoCompleteField {
 		if ( $field['type'] != 'autocomplete' ) {
 			return;
 		}
-
+		
 		$dependant_fields = FormidableAutoCompleteAdmin::get_dependant_fields( $field );
 
 		wp_enqueue_script( 'jquery.autocomplete', FAC_JS_PATH . 'jquery.autocomplete.min.js', array( "jquery" ), true );

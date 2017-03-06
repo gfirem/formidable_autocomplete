@@ -37,6 +37,7 @@ class FormidableAutoCompleteAdmin {
 	}
 
 	public function get_autocomplete_suggestions() {
+
 		if ( ! ( is_array( $_GET ) && defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
 			return;
 		}
@@ -52,7 +53,7 @@ class FormidableAutoCompleteAdmin {
 
 		if ( ! empty( $_GET["target_form"] ) && ! empty( $_GET["target_field"] ) && ! empty( $_GET["target_field_type"] ) && ! empty( $_GET["target_field_data_target"] ) ) {
 			$field_filter = false;
-
+			$start_field = $_GET["start_field"];
 			$target_field = $_GET["target_field"];
 			if ( $_GET["target_field_type"] == "data" && $_GET["target_field_data_target"] > 0 ) {
 				$target_field = $_GET["target_field_data_target"];
@@ -68,7 +69,7 @@ class FormidableAutoCompleteAdmin {
 			}
 
 			$result                = array();
-			$result["suggestions"] = $this->get_result( $target_field, $_GET["query"], $_GET["target_field_type"], $filter, $group );
+			$result["suggestions"] = $this->get_result( $target_field, $_GET["query"], $_GET["target_field_type"], $filter, $group,$start_field );
 		}
 		$this->print_result( $result );
 	}
@@ -79,7 +80,7 @@ class FormidableAutoCompleteAdmin {
 		wp_die();
 	}
 
-	private function get_result( $field_id, $search, $target_field_type, $field_filter = false, $group = false, $limit = - 1 ) {
+	private function get_result( $field_id, $search, $target_field_type, $field_filter = false, $group = false, $start_field,$limit = - 1 ) {
 		global $wpdb;
 
 		$sub_query = "SELECT (SELECT g.meta_value FROM " . $wpdb->prefix . "frm_item_metas g WHERE g.item_id = i.meta_value limit 0, 1) AS meta_value FROM " . $wpdb->prefix . "frm_item_metas i WHERE i.item_id = em.item_id limit 0, 1";
@@ -93,16 +94,39 @@ class FormidableAutoCompleteAdmin {
 				$sql = "SELECT em.meta_value, e.id as foreign_id, (SELECT i.id FROM " . $wpdb->prefix . "frm_item_metas i WHERE i.meta_value = em.item_id limit 0, 1) AS id " . $group_sql . " FROM " . $wpdb->prefix . "frm_item_metas em  INNER JOIN " . $wpdb->prefix . "frm_items e ON (e.id=em.item_id) WHERE em.field_id=" . $field_id . " AND e.is_draft=0 ";
 				break;
 			default:
-				$sql = "SELECT em.meta_value, e.id " . $group_sql . " FROM " . $wpdb->prefix . "frm_item_metas em  INNER JOIN " . $wpdb->prefix . "frm_items e ON (e.id=em.item_id) WHERE em.field_id=" . $field_id . " AND e.is_draft=0 ";
+				if ( ! empty( $field_filter ) ) {
+				
+					if( $start_field != "false" ){
+						
+						$getStartValue = "SELECT em.item_id from ".  $wpdb->prefix ."frm_item_metas em where em.meta_value LIKE '%".$field_filter."%' and em.field_id =".$start_field;
+					
+						$db_getStartValue   = $wpdb->get_results( $getStartValue );
+						$start_filter= $db_getStartValue[0]->item_id;
+						$sql = "SELECT em.meta_value, e.id " . $group_sql . " FROM " . $wpdb->prefix . "frm_item_metas em  INNER JOIN " . $wpdb->prefix . "frm_items e ON (e.id=em.item_id) INNER JOIN wp_frm_item_metas em2 ON (em2.item_id = em.item_id) AND em2.meta_value LIKE '%" .$start_filter ."%' WHERE em.field_id=" . $field_id . " AND e.is_draft=0 ";
+
+					}
+					else{
+						
+						$sql = "SELECT em.meta_value, e.id " . $group_sql . " FROM " . $wpdb->prefix . "frm_item_metas em  INNER JOIN " . $wpdb->prefix . "frm_items e ON (e.id=em.item_id) INNER JOIN wp_frm_item_metas em2 ON (em2.item_id = em.item_id) AND em2.meta_value LIKE '%" .$field_filter ."%' WHERE em.field_id=" . $field_id . " AND e.is_draft=0 ";
+					}
+				//$sql = $sql . " AND (" . $sub_query . ") LIKE '%" . $field_filter . "%'";
+				
+				}
+				else{
+					$sql = "SELECT em.meta_value, e.id " . $group_sql . " FROM " . $wpdb->prefix . "frm_item_metas em  INNER JOIN " . $wpdb->prefix . "frm_items e ON (e.id=em.item_id) WHERE em.field_id=" . $field_id . " AND e.is_draft=0 ";
+				}
+
+				
+				break;
 		}
 
 		if ( ! empty( $search ) ) {
 			$sql = $sql . " AND em.meta_value LIKE '%" . $search . "%'";
 		}
 
-		if ( ! empty( $field_filter ) ) {
+		/*if ( ! empty( $field_filter ) ) {
 			$sql = $sql . " AND (" . $sub_query . ") LIKE '%" . $field_filter . "%'";
-		}
+		}*/
 
 		if ( $limit > 0 ) {
 			$sql = $sql . " LIMIT " . $limit;
@@ -116,7 +140,9 @@ class FormidableAutoCompleteAdmin {
 		) );
 
 		$db_result   = $wpdb->get_results( $sql );
+      
 		$suggestions = array();
+		
 		foreach ( $db_result as $key => $row ) {
 			if ( ! $this->exist_in_array( $suggestions, $row->meta_value ) ) {
 				if ( $group ) {
@@ -132,7 +158,7 @@ class FormidableAutoCompleteAdmin {
 				}
 			}
 		}
-
+		//echo json_encode($suggestions);
 		return $suggestions;
 	}
 
@@ -258,7 +284,7 @@ class FormidableAutoCompleteAdmin {
 			// If current field is repeating, get lookup fields in repeating section and outside of it
 			$inc_repeating = 'include';
 		}
-
+	
 		$auto_complete_fields      = FrmField::get_all_for_form( $parent_form_id, '', 'include', $inc_repeating );
 		$auto_populate_field_types = FrmProLookupFieldsController::get_autopopulate_field_types();
 		$result                    = array();
