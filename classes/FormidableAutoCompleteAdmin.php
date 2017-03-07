@@ -321,25 +321,16 @@ class FormidableAutoCompleteAdmin {
 			if ( ! empty( $watch ) && count( $watch ) > 0 ) {
 				foreach ( $watch as $k => $i ) {
 					if ( ! empty( $i ) ) {
-						$target    = FrmField::getOne( $i );
-						$target_id = "field_" . $target->field_key;
-						//TODO test @victor
-						$ii = $item->id;
-						$aaa = (array)$item;
-						$temporal = json_encode( $item );
-						$tmp      = json_decode( $temporal );
-						$otro     = get_object_vars( $tmp );
-						foreach ( $otro as $propierties => $val ) {
-							if ( $propierties == 'id' ) {
-								$children_id[] = $val;
-							}
-						}
-						$children[] = $depende;
 						
+						$target    = FrmField::getOne( $i );
+						//echo json_encode($target);
+						$target_id = "field_" . $target->field_key;						
+						$children_id[] = $item->id;						
+						$children[] = $depende;						
 						//$result[ $target_id ][] = $i;
-						$result[ $target_id ]['fieldId']       = $field['id'];
-						$result[ $target_id ]['fieldKey']      = $field['field_key'];
-						$result[ $target_id ]['fieldType']     = $field['original_type'];
+						$result[ $target_id ]['fieldId']       = $i;
+						$result[ $target_id ]['fieldKey']      = $target->field_key;
+						$result[ $target_id ]['fieldType']     = $target->type;
 						$result[ $target_id ]['formId']        = $field['parent_form_id'];
 						$result[ $target_id ]['dependents']    = $children;
 						$result[ $target_id ]['dependents_id'] = $children_id;
