@@ -234,12 +234,16 @@ class FormidableAutoCompleteAdmin {
 
 		return $form_fields;
 	}
+	/*
+	Método para obtener los campos filtrados dado un padre y un hijo..
+	*/
 	public function get_autocomplete_line(){
 		global $wpdb;
 		check_ajax_referer( 'frm_ajax', 'nonce' );
 		
 		$result = new stdClass();
 		if ( ! empty( $_GET["parent_fields"] ) && ! empty( $_GET["parent_vals"] ) && ! empty( $_GET["field_id"] ) && ! empty( $_GET["target_form"] ) ) {
+			//Posición del hijo que se quiere obtener
 			$index = $_GET["index"];
 			$parent_fields = $_GET["parent_fields"];
 			$parent_vals = $_GET["parent_vals"];
@@ -335,24 +339,10 @@ class FormidableAutoCompleteAdmin {
 					if ( ! empty( $i ) ) {
 
 						$target                 = FrmField::getOne( $i );
-						$target_id              = "field_" . $target->field_key;
+						$target_id              = "field_" . $target->field_key;						
 						
-						$temporal = json_encode($item);
-						$tmp = json_decode($temporal);
-						$otro =get_object_vars($tmp);
-						foreach($otro as $propierties=>$val){
-                          if($propierties=='id'){
-                          		$children_id[] =$val;
-
-                          }
-                          
-
-                       }
-                       $children[]=$depende;
-
-						
-					
-
+                        $children_id[] =$item->id;
+                       	$children[]=$depende;
 						//$result[ $target_id ][] = $i;
 						$result[ $target_id  ]['fieldId'] = $field['id'];
 						$result[ $target_id  ]['fieldKey'] = $field['field_key'];						
