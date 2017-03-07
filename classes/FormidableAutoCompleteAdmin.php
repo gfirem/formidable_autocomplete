@@ -22,7 +22,6 @@ class FormidableAutoCompleteAdmin {
 		
 		add_action( "wp_ajax_nopriv_get_autocomplete_line", array( $this, "get_autocomplete_line" ) );
 		add_action( "wp_ajax_get_autocomplete_line", array( $this, "get_autocomplete_line" ) );
-		
 	}
 	
 	/**
