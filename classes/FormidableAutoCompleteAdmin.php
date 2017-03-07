@@ -296,7 +296,6 @@ class FormidableAutoCompleteAdmin {
 	 * @return array
 	 */
 	public static function get_dependant_fields( $field ) {
-		
 		$parent_form_id = isset( $field['parent_form_id'] ) ? $field['parent_form_id'] : $field['form_id'];
 		
 		if ( $parent_form_id == $field['form_id'] ) {
@@ -324,7 +323,9 @@ class FormidableAutoCompleteAdmin {
 					if ( ! empty( $i ) ) {
 						$target    = FrmField::getOne( $i );
 						$target_id = "field_" . $target->field_key;
-						
+						//TODO test @victor
+						$ii = $item->id;
+						$aaa = (array)$item;
 						$temporal = json_encode( $item );
 						$tmp      = json_decode( $temporal );
 						$otro     = get_object_vars( $tmp );
