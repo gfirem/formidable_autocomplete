@@ -307,32 +307,27 @@ class FormidableAutoCompleteAdmin {
 		
 		$auto_complete_fields      = FrmField::get_all_for_form( $parent_form_id, '', 'include', $inc_repeating );
 		$auto_populate_field_types = FrmProLookupFieldsController::get_autopopulate_field_types();
-		$result                    = array();
-		$children_id               = array();
-		$children                  = array();
-		
+		$result                    = array();		
+			
 		foreach ( $auto_complete_fields as $key => $item ) {
 			if ( ! in_array( $item->type, $auto_populate_field_types ) ) {
 				continue;
-			}
+			}			
 			$watch   = FrmField::get_option( $item, "fac_watch_lookup" );
 			$depende = FrmField::get_option( $item, "fac_get_values_field" );
 			if ( ! empty( $watch ) && count( $watch ) > 0 ) {
 				foreach ( $watch as $k => $i ) {
-					if ( ! empty( $i ) ) {
-						
-						$target    = FrmField::getOne( $i );
-						//echo json_encode($target);
-						$target_id = "field_" . $target->field_key;						
-						$children_id[] = $item->id;						
-						$children[] = $depende;						
-						//$result[ $target_id ][] = $i;
+					if ( ! empty( $i ) ) {					
+					
+						$target    = FrmField::getOne( $i );						
+						$target_id = "field_" . $target->field_key;							
 						$result[ $target_id ]['fieldId']       = $i;
 						$result[ $target_id ]['fieldKey']      = $target->field_key;
 						$result[ $target_id ]['fieldType']     = $target->type;
 						$result[ $target_id ]['formId']        = $field['parent_form_id'];
-						$result[ $target_id ]['dependents']    = $children;
-						$result[ $target_id ]['dependents_id'] = $children_id;
+						$result[ $target_id ]['current']       = $field['id'];
+						$result[ $target_id ]['dependents'] []   = $depende;
+						$result[ $target_id ]['dependents_id'][]= $item->id;
 					}
 				}
 			}
