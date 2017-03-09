@@ -315,7 +315,7 @@ class FormidableAutoCompleteAdmin {
 				continue;
 			}			
 			$watch   = FrmField::get_option( $item, "fac_watch_lookup" );
-			$depende = FrmField::get_option( $item, "fac_get_values_field" );
+			$depende = FrmField::get_option( $item, "fac_get_values_field" );//se obtiene el field_id del hijo
 			if ( ! empty( $watch ) && count( $watch ) > 0 ) {
 				foreach ( $watch as $k => $i ) {
 					if ( ! empty( $i ) ) {					
@@ -327,6 +327,7 @@ class FormidableAutoCompleteAdmin {
 						$result[ $target_id ]['fieldType']     = $target->type;
 						$result[ $target_id ]['formId']        = $field['parent_form_id'];
 						$result[ $target_id ]['current']       = $field['id'];
+						//Se asigan los hijos a este campo
 						$result[ $target_id ]['dependents'] []   = $depende;
 						$result[ $target_id ]['dependents_id'][]= $item->id;
 					}
