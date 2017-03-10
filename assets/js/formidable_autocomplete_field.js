@@ -16,8 +16,37 @@ jQuery(document).ready(function ($) {
                 params: {'action': 'get_autocomplete_suggestions', '_ajax_nonce': formidable_autocomplete_field.ajaxnonce, 'target_form': target_form, 'target_field': target_field, 'target_field_type': target_field_type, 'target_field_data_target': target_field_data_target},
                 onSearchComplete: function (query, suggestions) {
                     loading.hide();
+                    var suggestionChange =true;                   
+                    for (var i = 0; i < suggestions.length; i++) {
+                        if(suggestions[i].value == query){
+
+                            suggestionChange = false;
+                             break;
+                        }
+                    };
+                    if(suggestionChange){
+                         var parentRepeatArgs =  current[0].name.replace('item_meta[', '');
+                     var name = parentRepeatArgs.replace(']','');
+                     var actualVal =$("[name='item_meta[" + name + "]']").val();
+                  
+                         clearChildren(name);
+                    
+
+
+                    }
                 },
+              
                 onSearchStart: function (query) {
+                   
+                    var parentRepeatArgs =  current[0].name.replace('item_meta[', '');
+                     var name = parentRepeatArgs.replace(']','');
+                     var actualVal =$("[name='item_meta[" + name + "]']").val();
+                    
+                    if(actualVal !=query.query)
+                    {
+                         clearChildren(name);
+                    }
+
                     loading.show();
                     if (field_filter) {
                         var start_field = $("[name='item_meta[" + field_filter + "]']").attr("target_field_data_target");                        
@@ -39,6 +68,44 @@ jQuery(document).ready(function ($) {
 
         current.autocomplete(autocomplete_config);
     });
+    
+    function clearChildren(parent){
+
+        $(".fma_field").each(function () {
+
+             var actual = $(this);
+             var children = actual.attr("field_filter");
+             if(children==parent){
+                actual.val("");
+                var newParent =  actual[0].name.replace('item_meta[', '');
+                var name = newParent.replace(']','');
+                clearChildren(name);
+
+             }
+
+
+
+
+        });
+
+        //Buscamos campos filtrados hijos del campo actual
+       for (var key in formidable_autocomplete_field.dependant_fields) {
+                var child = formidable_autocomplete_field.dependant_fields[key];
+                if(child.fieldId == parent)
+                {
+                    for (var i = 0; i < child.dependents_id.length; i++) {
+                        var decendece = child.dependents_id[i];
+                       
+                       $("[name='item_meta[" + decendece + "]']").val(""); 
+                    }
+
+                }
+                
+            }
+        return;
+
+
+    }
 
     /*****************************************************
      * Lookup Field Functions
