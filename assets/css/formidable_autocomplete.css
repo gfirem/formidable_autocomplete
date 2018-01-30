@@ -1,7 +1,3 @@
-.gfirem_field {
-    color: #dc5958;
-}
-
 .autocomplete-suggestions {
     border: 1px solid #999;
     background: #FFF;
@@ -56,4 +52,8 @@
 .fac_frm_remove_tag:before,
 .fac_frm_add_tag:before{
     vertical-align: middle;
+}
+
+li#autocomplete > a.frm_add_field{
+    color: #dc5958 !important;
 }
