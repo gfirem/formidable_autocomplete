@@ -1,4 +1,4 @@
-=== Formidable Autocomplete ===
+=== GFireM Autocomplete ===
 Contributors: gfirem
 Tags: formidable, formidable autocomplete, formidable wordpress field, formidable lookup field, autocomplete,
 Requires at least: 4.6.2
@@ -10,7 +10,7 @@ License URI: http://www.apache.org/licenses/
 Add an autocomplete field to search data
 
 == Description ==
-With this field you can grab tha data from a form also you can create cascada relational fields and filter child to show data. It work like lookups.
+With this field you can grab tha data from a form also you can create cascade relational fields and filter child to show data. It work like lookups.
 
 == Changelog ==
 

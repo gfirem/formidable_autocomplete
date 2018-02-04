@@ -37,7 +37,8 @@ class GFireMAutocompleteOption {
 
 		$lookup_args   = GFireMAutocompleteAdmin::get_args_for_get_options_from_setting( $field );
 		$lookup_fields = GFireMAutocompleteAdmin::get_lookup_fields_for_watch_row( $field );
-
+		$fac_autopopulate_value = !empty($field['fac_autopopulate_value']) ? $field['fac_autopopulate_value'] : false;
+		$fac_get_values_form = !empty($field['fac_get_values_form']) ? $field['fac_get_values_form'] : false;
 		require( $this->view_path . 'autopopulate-values.php' );
 	}
 
