@@ -1,4 +1,4 @@
-function gfirem_autocomplete_admin(){
+function gfirem_autocomplete_admin() {
 
 	function hideOrShowAutopopulateValue() {
 		var fieldId = this.id.replace('fac_autopopulate_value_', '');
@@ -38,36 +38,36 @@ function gfirem_autocomplete_admin(){
 		}
 	}
 
-    function addWatchLookupRow() {
-        var id = jQuery(this).closest('li.form-field').data('fid');
-        var form_id = jQuery(this).closest('li.form-field').data('formid')
-        var row_key = 0;
-        var lookupBlockRows = document.getElementById('fac_frm_watch_lookup_block_' + id).childNodes;
+	function addWatchLookupRow() {
+		var id = jQuery(this).closest('li.form-field').data('fid');
+		var form_id = jQuery(this).closest('li.form-field').data('formid')
+		var row_key = 0;
+		var lookupBlockRows = document.getElementById('fac_frm_watch_lookup_block_' + id).childNodes;
 
-        if (lookupBlockRows.length > 0) {
-            var index = 1;
-            var aux = lookupBlockRows[index];
-            var tt = aux.id;
-            var lastRowId = lookupBlockRows[index].id;
-            if(lastRowId!= undefined){
-                row_key = 1 + parseInt(lastRowId.replace('fac_frm_watch_lookup_' + id + '_', ''));
-            }
+		if (lookupBlockRows.length > 0) {
+			var index = lookupBlockRows.length - 1;
+			var aux = lookupBlockRows[index];
+			var tt = aux.id;
+			var lastRowId = lookupBlockRows[index].id;
+			if (lastRowId !== undefined) {
+				row_key = 1 + parseInt(lastRowId.replace('fac_frm_watch_lookup_' + id + '_', ''));
+			}
 
-        }
+		}
 
-        jQuery.ajax({
-            type: 'POST', url: ajaxurl,
-            data: {action: 'get_autocomplete_row', form_id: form_id, field_id: id, row_key: row_key, nonce: frmGlobal.nonce},
-            success: function (newRow) {
-                jQuery(document.getElementById('frm_add_watch_lookup_link_' + id)).fadeOut('slow', function () {
-                    var watchRowBlock = jQuery(document.getElementById('fac_frm_watch_lookup_block_' + id));
-                    watchRowBlock.append(newRow);
-                    watchRowBlock.fadeIn('slow');
-                });
-            }
-        });
-        return false;
-    }
+		jQuery.ajax({
+			type: 'POST', url: ajaxurl,
+			data: {action: 'get_autocomplete_row', form_id: form_id, field_id: id, row_key: row_key, nonce: frmGlobal.nonce},
+			success: function (newRow) {
+				jQuery(document.getElementById('frm_add_watch_lookup_link_' + id)).fadeOut('slow', function () {
+					var watchRowBlock = jQuery(document.getElementById('fac_frm_watch_lookup_block_' + id));
+					watchRowBlock.append(newRow);
+					watchRowBlock.fadeIn('slow');
+				});
+			}
+		});
+		return false;
+	}
 
 	// Clear the Watch Fields option when Lookup field switches to "Text" option
 	function maybeClearWatchFields() {
@@ -120,7 +120,7 @@ function gfirem_autocomplete_admin(){
 		return false;
 	}
 
-	function getAutocompleteTarget(){
+	function getAutocompleteTarget() {
 		var fieldID = this.id.replace('autocomplete_target_form_', '');
 		var fieldSelect = document.getElementById('autocomplete_target_field_' + fieldID);
 		var fieldType = this.getAttribute('data-fieldtype');
@@ -144,8 +144,8 @@ function gfirem_autocomplete_admin(){
 		}
 	}
 
-	return{
-		init: function(){
+	return {
+		init: function () {
 			if (document.getElementById('frm_build_form') !== null) {
 				var $newFields = jQuery(document.getElementById('new_fields'));
 				$newFields.on('change', '.fac_autopopulate_value', hideOrShowAutopopulateValue);
@@ -161,7 +161,5 @@ function gfirem_autocomplete_admin(){
 }
 
 jQuery(document).ready(function ($) {
-	/* <fs_premium_only> */
 	gfirem_autocomplete_admin().init();
-	/* </fs_premium_only> */
 });
