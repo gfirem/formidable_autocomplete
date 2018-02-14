@@ -32,7 +32,23 @@ class GFireMAutocompleteAdmin {
 
 		add_action( "wp_ajax_nopriv_get_autocomplete_line", array( $this, "get_autocomplete_line" ) );
 		add_action( "wp_ajax_get_autocomplete_line", array( $this, "get_autocomplete_line" ) );
+
+		//Get the fac_watch_lookup fields
+        add_action( "wp_ajax_nopriv_get_watched_fields", array( $this, "get_watched_fields" ) );
+        add_action( "wp_ajax_get_watched_fields", array( $this, "get_watched_fields" ) );
+
 	}
+
+	public function get_watched_fields(){
+
+        $field_id = FrmAppHelper::get_post_param( 'field_id', '', 'absint' );
+        $current_field  = FrmField::getOne( $field_id );
+        $result = $current_field->field_options['fac_watch_lookup'];
+
+        echo  json_encode( $result );
+
+        wp_die();
+    }
 
 	/**
 	 * Include styles
@@ -256,19 +272,30 @@ class GFireMAutocompleteAdmin {
 
 		$result = new stdClass();
 		if ( ! empty( $_GET["parent_fields"] ) && ! empty( $_GET["parent_vals"] ) && ! empty( $_GET["field_id"] ) && ! empty( $_GET["target_form"] ) ) {
-			$index         = $_GET["index"];
+			$index_param        = $_GET["index"];
 			$parent_fields = $_GET["parent_fields"];
 			$parent_vals   = $_GET["parent_vals"];
 			$field_id      = $_GET["field_id"];
 			$target_form   = $_GET["target_form"];
+			$autocomplete_values = $_GET["autocomplete_values"];
 
-			$query            = "SELECT em.item_id FROM " . $wpdb->prefix . "frm_item_metas em INNER JOIN " . $wpdb->prefix . "frm_items e ON (e.id=em.item_id) WHERE  e.form_id= " . $target_form . " AND e.is_draft=0 AND em.field_id=" . $parent_fields . " AND em.meta_value='" . $parent_vals . "'";
-			$db_getStartValue = $wpdb->get_results( $query );
-			$start_filter     = $db_getStartValue[0]->item_id;
-			$finalQuery       = "SELECT em.meta_value FROM " . $wpdb->prefix . "frm_item_metas em INNER JOIN " . $wpdb->prefix . "frm_items e ON (e.id=em.item_id) WHERE  e.form_id=" . $target_form . " AND e.is_draft=0 AND em.field_id=" . $field_id . " AND e.id in ('" . $start_filter . "')";
-			$db_result        = $wpdb->get_results( $finalQuery );
-			$result->value    = $db_result[0]->meta_value;
-			$result->index    = $index;
+			$recursivequery = "SELECT eml.meta_value FROM " . $wpdb->prefix . "frm_items e ";
+			foreach ($autocomplete_values as $key=> $text_value){
+			    $index = "em".$key;
+			    $recursivequery.= " INNER JOIN ".$wpdb->prefix . "frm_item_metas ".$index." ON (e.id= $index.item_id AND $index.meta_value='$text_value')";
+            }
+            $recursivequery.= "INNER JOIN wp_frm_item_metas eml ON(eml.item_id =e.id AND eml.field_id= $field_id  )  Where e.form_id = $target_form AND e.is_draft=0 ";
+            $db_result        = $wpdb->get_results(  $recursivequery );
+            $result->value    = $db_result[0]->meta_value;
+            $result->index    = $index_param;
+
+               /* $query            = "SELECT em.item_id FROM " . $wpdb->prefix . "frm_item_metas em INNER JOIN " . $wpdb->prefix . "frm_items e ON (e.id=em.item_id) WHERE  e.form_id= " . $target_form . " AND e.is_draft=0 AND em.field_id=" . $parent_fields . " AND em.meta_value='" . $parent_vals . "'";
+                $db_getStartValue = $wpdb->get_results( $query );
+                $start_filter     = $db_getStartValue[0]->item_id;
+                $finalQuery       = "SELECT em.meta_value FROM " . $wpdb->prefix . "frm_item_metas em INNER JOIN " . $wpdb->prefix . "frm_items e ON (e.id=em.item_id) WHERE  e.form_id=" . $target_form . " AND e.is_draft=0 AND em.field_id=" . $field_id . " AND e.id in ('" . $start_filter . "')";
+                $db_result        = $wpdb->get_results( $finalQuery );
+                $result->value    = $db_result[0]->meta_value;
+                $result->index    = $index;*/
 		}
 
 		echo json_encode( $result );
