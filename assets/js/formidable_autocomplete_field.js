@@ -135,23 +135,28 @@ jQuery(document).ready(function ($) {
 		var currentTargetForm = $("[name='item_meta[" + triggerFieldArgs.fieldId + "]']").attr("target_form");
 		var parentsVal = $("[name='item_meta[" + triggerFieldArgs.fieldId + "]']").val();
 		for (var i = 0; i < triggerFieldArgs.dependents.length; i++) {
-			var dependant_id = triggerFieldArgs.dependents_id[0];
-			var autocomplete_values =[];
+
+
+            var dependant_id = triggerFieldArgs.dependents_id[i];
+            var autocomplete_values = [];
+            var indexx =0;
 
             jQuery.ajax({
 
                 type: 'POST', url: frm_js.ajax_url,
-                data: {action: 'get_watched_fields',field_id: dependant_id,  nonce: frm_js.nonce},
+                data: {action: 'get_watched_fields', field_id: dependant_id, nonce: frm_js.nonce},
                 success: function (newRow) {
 
-                	var newRowValues= $.parseJSON(newRow);
-					var counter = 0;
-                	for (var j = 0; j < newRowValues.length; j++) {
+                    var newRowValues = $.parseJSON(newRow);
+                    var counter = 0;
+                    for (var j = 0; j < newRowValues.length; j++) {
                         var currentVal = $("[name='item_meta[" + newRowValues[j] + "]']").val();
-                        if(currentVal!=''){
-                            autocomplete_values[counter++]=currentVal;
-						}
-					}
+                        if (currentVal != '') {
+                            autocomplete_values[counter++] = currentVal;
+                        }
+                    }
+
+
 
                     jQuery.ajax({
                         type: 'GET',
@@ -159,11 +164,11 @@ jQuery(document).ready(function ($) {
                         data: {
                             action: 'get_autocomplete_line',
                             parent_fields: currentTargetField,
-                            autocomplete_values :autocomplete_values,
+                            autocomplete_values: autocomplete_values,
                             parent_vals: parentsVal,
-                            field_id: triggerFieldArgs.dependents[i],
+                            field_id: triggerFieldArgs.dependents[indexx],
                             target_form: currentTargetForm,
-                            index: i,
+                            index: indexx++,
                             nonce: frm_js.nonce
                         },
                         success: function (newOptions) {
@@ -175,7 +180,8 @@ jQuery(document).ready(function ($) {
                     });
 
                 }
-			})
+            })
+
 
 
 		}
