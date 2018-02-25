@@ -3,7 +3,7 @@ Contributors: gfirem
 Tags: formidable, formidable autocomplete, formidable wordpress field, formidable autocomplete field, autocomplete,
 Requires at least: 4.6.2
 Tested up to: 4.9.4
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: Apache License 2.0
 License URI: http://www.apache.org/licenses/
 
@@ -14,8 +14,13 @@ With this field you can grab tha data from a form also you can create cascade re
 
 == Changelog ==
 
+= 1.0.2 =
+* Fixing the script to apply the watch to multiples fields.
+* Improving the plugin speed implementing cache in some points.
+
 = 1.0.1 =
-Fixing the Watch Autocomplete Fields
+* Fixing the Watch Autocomplete Fields
 
 = 1.0.0 =
-Start
+* Start
+
