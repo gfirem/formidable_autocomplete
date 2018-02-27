@@ -268,7 +268,7 @@ class GFireMAutocompleteAdmin {
 		global $wpdb;
 		check_ajax_referer( 'frm_ajax', 'nonce' );
 		$result = new stdClass();
-		if ( ! empty( $_GET["field_id"] ) && ! empty( $_GET["target_form"] ) && ! empty( $_GET["autocomplete_values"] ) && ! empty( $_GET["index"] ) ) {
+		if ( isset( $_GET["field_id"] ) &&  isset( $_GET["target_form"] ) &&  isset( $_GET["autocomplete_values"] ) &&  isset( $_GET["index"] ) ) {
 			$index_param         = FrmAppHelper::get_param( 'index' );
 			$field_id            = FrmAppHelper::get_param( 'field_id' );
 			$target_form         = FrmAppHelper::get_param( 'target_form' );
