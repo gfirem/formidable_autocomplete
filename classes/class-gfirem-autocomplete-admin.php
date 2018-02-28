@@ -123,8 +123,7 @@ class GFireMAutocompleteAdmin {
 		$suggestions = array();
 		global $wpdb;
         $cache_name   = 'meta_value_for_' . $parent_field . '_' . $field_filter . '_' . $field_id . '_' .$search ;
-        $transient = get_transient(GFireMAutoComplete::getSlug());
-        $cached_result       = isset($transient[$cache_name]) ? $transient[$cache_name] : false;
+        $cached_result  = get_transient( $cache_name);
         $suggestions = $cached_result;
         if ( $cached_result === false ) {
             $sub_query = "SELECT (SELECT g.meta_value FROM " . $wpdb->prefix . "frm_item_metas g WHERE g.item_id = i.meta_value limit 0, 1) AS meta_value FROM " . $wpdb->prefix . "frm_item_metas i WHERE i.item_id = em.item_id limit 0, 1";
@@ -190,7 +189,7 @@ class GFireMAutocompleteAdmin {
                     }
                 }
             }
-            set_transient(GFireMAutoComplete::getSlug(),array($cache_name=>$suggestions), 60*60*12);
+            set_transient($cache_name,$suggestions, 60*60*12);
 
         }
 
