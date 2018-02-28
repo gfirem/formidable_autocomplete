@@ -269,7 +269,7 @@ class GFireMAutocompleteAdmin {
 		global $wpdb;
 		check_ajax_referer( 'frm_ajax', 'nonce' );
 		$result = new stdClass();
-		if ( isset( $_GET["field_id"] ) &&  isset( $_GET["target_form"] ) &&  isset( $_GET["autocomplete_values"] ) &&  isset( $_GET["index"] ) ) {
+		if ( isset( $_GET["field_id"] ) && isset( $_GET["target_form"] ) && isset( $_GET["autocomplete_values"] ) && isset( $_GET["index"] ) ) {
 			$index_param         = FrmAppHelper::get_param( 'index' );
 			$field_id            = FrmAppHelper::get_param( 'field_id' );
 			$target_form         = FrmAppHelper::get_param( 'target_form' );
@@ -287,9 +287,11 @@ class GFireMAutocompleteAdmin {
 				$arguments[]     = $target_form;
 				$recursive_query .= " INNER JOIN {$wpdb->prefix}frm_item_metas eml ON(eml.item_id=e.id AND eml.field_id=%d) WHERE e.form_id=%d AND e.is_draft=0 ";
 				$db_result       = $wpdb->get_results( $wpdb->prepare( $recursive_query, $arguments ) );
-				$result->value   = $db_result[0]->meta_value;
-				$result->index   = $index_param;
-				wp_cache_set( $cache_name, $result, GFireMAutoComplete::getSlug() );
+				if ( ! empty( $db_result ) && ! empty( $db_result[0] ) ) {
+					$result->value = $db_result[0]->meta_value;
+					$result->index = $index_param;
+					wp_cache_set( $cache_name, $result, GFireMAutoComplete::getSlug() );
+				}
 			}
 		}
 		
