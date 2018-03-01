@@ -125,8 +125,9 @@ class GFireMAutocompleteAdmin {
         $cache_name   = 'meta_value_for_' . $parent_field . '_' . $field_filter . '_' . $field_id . '_' .$search ;
         $cached_result  = get_transient( $cache_name);
         $suggestions = $cached_result;
+        $arguments = array();
         if ( $cached_result === false ) {
-            $sub_query = "SELECT (SELECT g.meta_value FROM " . $wpdb->prefix . "frm_item_metas g WHERE g.item_id = i.meta_value limit 0, 1) AS meta_value FROM " . $wpdb->prefix . "frm_item_metas i WHERE i.item_id = em.item_id limit 0, 1";
+            $sub_query = "SELECT (SELECT g.meta_value FROM  {$wpdb->prefix}frm_item_metas g WHERE g.item_id = i.meta_value limit 0, 1) AS meta_value FROM  {$wpdb->prefix}frm_item_metas i WHERE i.item_id = em.item_id limit 0, 1";
 
             $group_sql = "";
             if ( $group ) {
@@ -134,21 +135,33 @@ class GFireMAutocompleteAdmin {
             }
             switch ( $target_field_type ) {
                 case "data":
-                    $sql = "SELECT em.meta_value, e.id as foreign_id, (SELECT i.id FROM " . $wpdb->prefix . "frm_item_metas i WHERE i.meta_value = em.item_id limit 0, 1) AS id " . $group_sql . " FROM " . $wpdb->prefix . "frm_item_metas em  INNER JOIN " . $wpdb->prefix . "frm_items e ON (e.id=em.item_id) WHERE em.field_id=" . $field_id . " AND e.is_draft=0 ";
+                    $arguments[] = $field_id;
+                    $sql = "SELECT em.meta_value, e.id as foreign_id, (SELECT i.id FROM  {$wpdb->prefix}frm_item_metas i WHERE i.meta_value = em.item_id limit 0, 1) AS id  {$group_sql}  FROM  {$wpdb->prefix}frm_item_metas em  INNER JOIN   {$wpdb->prefix}frm_items e ON (e.id=em.item_id) WHERE em.field_id=%d AND e.is_draft=0 ";
                     break;
                 default:
                     if ( ! empty( $field_filter ) ) {
                         if ( $start_field != "false" ) {
-                            $getStartValue    = "SELECT em.item_id from " . $wpdb->prefix . "frm_item_metas em where em.meta_value LIKE '%" . $field_filter . "%' and em.field_id =" . $start_field;
-                            $db_getStartValue = $wpdb->get_results( $getStartValue );
+                            $param = array('%'.$field_filter.'%',$start_field);
+                            $getStartValue    = "SELECT em.item_id from {$wpdb->prefix}frm_item_metas em where em.meta_value LIKE %s and em.field_id =%d";
+                            $pre_getStartValue = $wpdb->prepare($getStartValue,$param);
+                            $db_getStartValue = $wpdb->get_results($pre_getStartValue );
                             $start_filter     = $db_getStartValue[0]->item_id;
-                            $sql              = "SELECT em.meta_value, em.item_id id " . $group_sql . " FROM " . $wpdb->prefix . "frm_item_metas em  WHERE em.field_id= " . $field_id . " AND em.meta_value LIKE '%" . $search . "%'  and em.item_id in  (Select item_id from " . $wpdb->prefix . "frm_item_metas where item_id = em.item_id and meta_value LIKE '%" . $start_filter . "%' and field_id =" . $parent_field . ")";
+                            $arguments[] = $field_id;
+                            $arguments[] = '%'.$search.'%';
+                            $arguments[] = '%'.$start_filter.'%';
+                            $arguments[] = $parent_field;
+                            $sql              = "SELECT em.meta_value, em.item_id id  {$group_sql}  FROM  {$wpdb->prefix}frm_item_metas em  WHERE em.field_id=%d AND em.meta_value LIKE %s  and em.item_id in  (Select item_id from {$wpdb->prefix}frm_item_metas where item_id = em.item_id and meta_value LIKE %s and field_id =%d)";
                         } else {
-                            $sql = "SELECT em.meta_value, em.item_id id " . $group_sql . " FROM " . $wpdb->prefix . "frm_item_metas em  WHERE em.field_id= " . $field_id . " AND em.meta_value LIKE '%" . $search . "%'  and em.item_id in  (Select item_id from " . $wpdb->prefix . "frm_item_metas where item_id = em.item_id and meta_value LIKE '%" . $field_filter . "%' and field_id =" . $parent_field . ")";
+                            $arguments[] = $field_id;
+                            $arguments[] = '%'.$search.'%';
+                            $arguments[] = '%'.$field_filter.'%';
+                            $arguments[] = $parent_field;
+                            $sql = "SELECT em.meta_value, em.item_id id  {$group_sql}  FROM {$wpdb->prefix}frm_item_metas em  WHERE em.field_id=%d AND em.meta_value LIKE %s  and em.item_id in  (Select item_id from {$wpdb->prefix}frm_item_metas where item_id = em.item_id and meta_value LIKE %s and field_id =%d)";
                         }
                         //$sql = $sql . " AND (" . $sub_query . ") LIKE '%" . $field_filter . "%'";
                     } else {
-                        $sql = "SELECT em.meta_value, e.id " . $group_sql . " FROM " . $wpdb->prefix . "frm_item_metas em  INNER JOIN " . $wpdb->prefix . "frm_items e ON (e.id=em.item_id) WHERE em.field_id=" . $field_id . " AND e.is_draft=0 ";
+                        $arguments[] = $field_id;
+                        $sql = "SELECT em.meta_value, e.id {$group_sql} FROM {$wpdb->prefix}frm_item_metas em  INNER JOIN {$wpdb->prefix}frm_items e ON (e.id=em.item_id) WHERE em.field_id=%d AND e.is_draft=0 ";
                     }
 
                     break;
@@ -156,7 +169,8 @@ class GFireMAutocompleteAdmin {
 
             if ( ! empty( $search ) ) {
                 if ( empty( $field_filter ) ) {
-                    $sql = $sql . " AND em.meta_value LIKE '%" . $search . "%'";
+                    $arguments[] = '%'.$search.'%';
+                    $sql = $sql . " AND em.meta_value LIKE %s";
                 }
 
             }
@@ -172,7 +186,8 @@ class GFireMAutocompleteAdmin {
                 'object_name'    => $sql,
             ) );
 
-            $db_result = $wpdb->get_results( $sql );
+            $prepare_result = $wpdb->prepare($sql,$arguments);
+            $db_result = $wpdb->get_results(  $prepare_result );
 
             foreach ( $db_result as $key => $row ) {
                 if ( ! $this->exist_in_array( $suggestions, $row->meta_value ) ) {
@@ -274,7 +289,8 @@ class GFireMAutocompleteAdmin {
 			$target_form         = FrmAppHelper::get_param( 'target_form' );
 			$autocomplete_values = FrmAppHelper::get_param( 'autocomplete_values' );
 			$cache_name          = 'meta_value_for_' . $index_param . '_' . $field_id . '_' . $target_form . '_' . join( '_', $autocomplete_values );
-			$cached_result       = wp_cache_get( $cache_name, GFireMAutoComplete::getSlug() );
+            $cached_result  = get_transient( $cache_name);
+            $result = $cached_result;
 			if ( $cached_result === false ) {
 				$arguments       = array();
 				$recursive_query = "SELECT eml.meta_value FROM {$wpdb->prefix}frm_items e ";
@@ -289,7 +305,7 @@ class GFireMAutocompleteAdmin {
 				if ( ! empty( $db_result ) && ! empty( $db_result[0] ) ) {
 					$result->value = $db_result[0]->meta_value;
 					$result->index = $index_param;
-					wp_cache_set( $cache_name, $result, GFireMAutoComplete::getSlug() );
+                    set_transient( $cache_name, $result,60*60*12 );
 				}
 			}
 		}
