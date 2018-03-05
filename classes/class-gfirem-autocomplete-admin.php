@@ -54,10 +54,7 @@ class GFireMAutocompleteAdmin {
 	 * Include styles
 	 */
 	public function front_enqueue_style() {
-		$current_screen = get_current_screen();
-		if ( 'toplevel_page_formidable' === $current_screen->id ) {
-			wp_enqueue_style( 'formidable_autocomplete', $this->base_url . 'css/formidable_autocomplete.css' );
-		}
+		wp_enqueue_style( 'formidable_autocomplete', $this->base_url . 'css/formidable_autocomplete.css' );
 	}
 	
 	/**
