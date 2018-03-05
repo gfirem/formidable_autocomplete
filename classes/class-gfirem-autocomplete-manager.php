@@ -4,18 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 class GFireMAutocompleteManager {
-
-	/*
-	 * Me quede por:
-	 * hay que hacer que enlazar los ficheros para que carge all en su lugar.
-	 * El plugins es de pago y no tiene contenido protejido.
-	 * El campo tiene que tener el mismo slug para que siga funcionando.
-	 * Hay que hacer que el plugin sea como cascaron para todos los campos.
-	 * Hay campos que son free que van a ir directo a wp.org
-	 * Hacer el campo lo mas ligero posible
-	 * Ver si se puede implementar cache.
-	 *
-	 */
+	
 	public function __construct() {
 
 		add_action( 'admin_menu', array( $this, 'admin_menu' ) );
