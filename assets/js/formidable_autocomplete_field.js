@@ -749,7 +749,7 @@ jQuery(document).ready(function ($) {
 
 		/* </fs_premium_only> */
 
-    $(".delete-input-need").on('keyup paste',function () {
+    $(".fma_field").on('keyup paste',function () {
         if($(this).val()!=""){
             $(this).siblings("span.clear-button").fadeIn();
         }
@@ -758,5 +758,9 @@ jQuery(document).ready(function ($) {
         }
 
     });
+    $("span.clear-button").on("click",function (event) {
+        event.stopPropagation();
+		$(this).siblings(".fma_field").val('');
+    } );
 
 });
