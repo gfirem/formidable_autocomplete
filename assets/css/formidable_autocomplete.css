@@ -57,3 +57,23 @@
 li#autocomplete > a.frm_add_field{
     color: #dc5958 !important;
 }
+.delete-input-need {
+    float: left;
+    width: 100%;
+}
+.autocomplete-conatiner {
+    float: left;
+    width: 100%;
+    position: relative;
+}
+
+.clear-button {
+    cursor: pointer;
+    color:#060606;
+    line-height: 200%;
+    opacity: 0.5;
+    width: 5%;
+    right: 1px;
+    position: absolute;
+    display: none;
+}

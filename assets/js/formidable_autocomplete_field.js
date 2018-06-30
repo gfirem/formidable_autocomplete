@@ -747,5 +747,16 @@ jQuery(document).ready(function ($) {
 		return fieldNameParts.length >= 3;
 	}
 
-	/* </fs_premium_only> */
+		/* </fs_premium_only> */
+
+    $(".delete-input-need").on('keyup paste',function () {
+        if($(this).val()!=""){
+            $(this).siblings("span.clear-button").fadeIn();
+        }
+        else{
+            $(this).siblings("span.clear-button").fadeOut();
+        }
+
+    });
+
 });
