@@ -761,6 +761,7 @@ jQuery(document).ready(function ($) {
     $("span.clear-button").on("click",function (event) {
         event.stopPropagation();
 		$(this).siblings(".fma_field").val('');
+		$(this).fadeOut();
     } );
 
 });
