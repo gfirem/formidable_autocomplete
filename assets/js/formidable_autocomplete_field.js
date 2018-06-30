@@ -756,10 +756,10 @@ jQuery(document).ready(function ($) {
         else{
             $(this).siblings("span.clear-button").fadeOut();
         }
-
     });
+
     $("span.clear-button").on("click",function (event) {
-        event.stopPropagation();
+        $(this).siblings(".fma_field").autocomplete().clear();
 		$(this).siblings(".fma_field").val('');
 		$(this).fadeOut();
     } );
