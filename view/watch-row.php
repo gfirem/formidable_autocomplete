@@ -11,6 +11,6 @@
 				?></option>
 		<?php } ?>
     </select>
-    <a href="javascript:void(0)" class="fac_frm_remove_tag frm_icon_font" data-removeid="fac_frm_watch_lookup_<?php echo esc_attr( $field_id . '_' . $row_key ) ?>" data-fieldid="<?php echo esc_attr( $field_id ) ?>"></a>
-    <a href="javascript:void(0)" class="fac_frm_add_tag frm_icon_font fac_frm_add_watch_lookup_row"></a>
+    <a href="javascript:void(0)" class="fac_frm_remove_tag frm_icon_font" data-removeid="fac_frm_watch_lookup_<?php echo esc_attr( $field_id . '_' . $row_key ) ?>" data-fieldid="<?php echo esc_attr( $field_id ) ?>" data-rowkey="<?php echo esc_attr( $row_key ) ?>" data-formid="<?php echo esc_attr( $form_id ) ?>"></a>
+    <a href="javascript:void(0)" class="fac_frm_add_tag frm_icon_font fac_frm_add_watch_lookup_row" data-fieldid="<?php echo esc_attr( $field_id ) ?>" data-rowkey="<?php echo esc_attr( $row_key ) ?>" data-formid="<?php echo esc_attr( $form_id ) ?>"></a>
 </div>

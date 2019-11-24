@@ -39,8 +39,8 @@ function gfirem_autocomplete_admin() {
 	}
 
 	function addWatchLookupRow() {
-		var id = jQuery(this).closest('li.form-field').data('fid');
-		var form_id = jQuery(this).closest('li.form-field').data('formid')
+		var id = jQuery(this).attr('data-fieldid');
+		var form_id = jQuery(this).attr('data-formid');
 		var row_key = 0;
 		var lookupBlockRows = document.getElementById('fac_frm_watch_lookup_block_' + id).childNodes;
 
@@ -146,7 +146,7 @@ function gfirem_autocomplete_admin() {
 
 	return {
 		init: function () {
-			if (document.getElementById('frm_build_form') !== null) {
+			if (document.getElementById('frm_builder_page') !== null) {
 				var $newFields = jQuery(document.getElementById('new_fields'));
 				$newFields.on('change', '.fac_autopopulate_value', hideOrShowAutopopulateValue);
 				$newFields.on('change', '.fac_frm_get_values_form', updateGetValueFieldSelection);

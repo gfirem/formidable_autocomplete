@@ -19,6 +19,7 @@ if ( ! class_exists( 'GFireMFieldBase' ) ) {
 
 		public $slug;
 		public $name;
+		public $icon;
 		public $description;
 		public $defaults = array();
 		public $global_options = array();
@@ -26,13 +27,14 @@ if ( ! class_exists( 'GFireMFieldBase' ) ) {
 		public $form_id;
 		public $is_tweak;
 
-		public function __construct( $slug, $name, $defaults, $description = '', $global_options = array(), $plan = 'profesional' ) {
+		public function __construct( $slug, $name, $defaults, $description = '', $global_options = array(), $plan = 'profesional', $icon = 'dashicons dashicons-admin-site-alt3' ) {
 			if ( empty( $slug ) || empty( $name ) || empty( $defaults ) || ! is_array( $defaults ) ) {
 				throw new InvalidArgumentException();
 			}
 			if ( class_exists( 'FrmProAppController' ) ) {
 				$this->slug           = $slug;
 				$this->name           = $name;
+				$this->icon           = $icon;
 				$this->description    = $description;
 				$this->defaults       = $defaults;
 				$this->global_options = $global_options;
@@ -49,7 +51,7 @@ if ( ! class_exists( 'GFireMFieldBase' ) ) {
 				add_filter( 'frmpro_fields_replace_shortcodes', array( $this, 'add_formidable_custom_short_code' ), 10, 4 );
 				add_filter( "frm_validate_field_entry", array( $this, "process_validate_frm_entry" ), 10, 3 );
 				add_filter( 'frm_field_classes', array( $this, 'process_fields_class' ), 10, 2 );
-				add_filter( 'frm_email_value', array( $this, 'process_replace_value_in_mail' ), 15, 3 );
+				add_filter( 'frm_display_' . $this->getSlug() . '_value_custom', array( $this, 'process_replace_value_in_mail' ), 15, 2 );
 			}
 		}
 
@@ -61,7 +63,7 @@ if ( ! class_exists( 'GFireMFieldBase' ) ) {
 		 * @return mixed
 		 */
 		public function add_formidable_field( $fields ) {
-			$fields[ $this->slug ] =  esc_html( $this->name );
+			$fields[ $this->slug ] = array( 'name' => esc_html( $this->name ), 'icon' => $this->icon );
 
 			return $fields;
 		}
@@ -343,11 +345,15 @@ if ( ! class_exists( 'GFireMFieldBase' ) ) {
 		}
 
 		/**
+		 * @param $value
+		 * @param $args
+		 *
+		 * @return string
 		 * @see $this->replace_value_in_mail
 		 */
-		public function process_replace_value_in_mail( $value, $meta, $entry ) {
-			if ( $meta->field_type == $this->getSlug() ) {
-				return $this->replace_value_in_mail( $value, $meta, $entry );
+		public function process_replace_value_in_mail( $value, $args ) {
+			if ( isset( $args['field'] ) && $args['field']->type == $this->getSlug() ) {
+				return $this->replace_value_in_mail( $value, $args );
 			}
 
 			return $value;
@@ -357,12 +363,11 @@ if ( ! class_exists( 'GFireMFieldBase' ) ) {
 		 * Replace value in email notifications
 		 *
 		 * @param $value
-		 * @param $meta
-		 * @param $entry
+		 * @param $args
 		 *
 		 * @return string
 		 */
-		public function replace_value_in_mail( $value, $meta, $entry ) {
+		public function replace_value_in_mail( $value, $args ) {
 			return $value;
 		}
 

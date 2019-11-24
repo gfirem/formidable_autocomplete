@@ -35,20 +35,22 @@ class GFireMAutocompleteOption {
 			return;
 		}
 
-		$lookup_args   = GFireMAutocompleteAdmin::get_args_for_get_options_from_setting( $field );
-		$lookup_fields = GFireMAutocompleteAdmin::get_lookup_fields_for_watch_row( $field );
-		$fac_autopopulate_value = !empty($field['fac_autopopulate_value']) ? $field['fac_autopopulate_value'] : false;
-		$fac_get_values_form = !empty($field['fac_get_values_form']) ? $field['fac_get_values_form'] : false;
+		$form_id                = $values['id'];
+		$lookup_args            = GFireMAutocompleteAdmin::get_args_for_get_options_from_setting( $field );
+		$lookup_fields          = GFireMAutocompleteAdmin::get_lookup_fields_for_watch_row( $field );
+		$fac_autopopulate_value = ! empty( $field['fac_autopopulate_value'] ) ? $field['fac_autopopulate_value'] : false;
+		$fac_get_values_form    = ! empty( $field['fac_get_values_form'] ) ? $field['fac_get_values_form'] : false;
 		require( $this->view_path . 'autopopulate-values.php' );
 	}
 
 	/**
 	 * Show the dropdown options for the "Get Options/Values From" Field option
 	 *
-	 * @since 2.01.0
-	 *
 	 * @param array $form_fields
 	 * @param array $field ($field is not empty on page load)
+	 *
+	 * @since 2.01.0
+	 *
 	 */
 	private static function show_options_for_get_values_field( $form_fields, $field = array() ) {
 		$select_field_text = __( '&mdash; Select Field &mdash;', 'formidable' );

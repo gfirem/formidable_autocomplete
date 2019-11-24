@@ -30,7 +30,8 @@ class GFireMAutocompleteField extends GFireMFieldBase {
 				'autocomplete_cache'               => 'true',
 				'autocomplete_validate'            => 'true',
 			),
-			__( 'Show a text field with autocomplete.', '' )
+			__( 'Show a text field with autocomplete.', '' ),
+			array(), 'profesional', 'dashicons dashicons-code-standards'
 		);
 	}
 
@@ -103,7 +104,7 @@ class GFireMAutocompleteField extends GFireMFieldBase {
 		include( $this->view_path . 'field.php' );
 	}
 
-	private function load_scripts( $print_value = "", $field_id = "", $dependant_fields ) {
+	private function load_scripts( $print_value = "", $field_id = "", $dependant_fields = "" ) {
 		wp_enqueue_script( 'formidable_autocomplete_field', $this->base_url . 'js/formidable_autocomplete_field.js', array( "jquery.autocomplete" ), true );
 		$params              = array(
 			'ajaxurl'          => admin_url( 'admin-ajax.php' ),
@@ -129,7 +130,7 @@ class GFireMAutocompleteField extends GFireMFieldBase {
 		$display['options']        = true;
 		$display['label_position'] = true;
 		$display['css']            = true;
-		$display['conf_field']     = true;
+//		$display['conf_field']     = true; Not working in the new version
 		$display['invalid']        = true;
 		$display['default_value']  = true;
 		$display['visibility']     = true;
