@@ -68,14 +68,14 @@
 		}
 
 		protected function get_option_manager() {
-			return FS_Option_Manager::get_manager( WP_FS__ACCOUNTS_OPTION_NAME, true );
+			return FS_Option_Manager::get_manager( WP_FS__ACCOUNTS_OPTION_NAME, true, true );
 		}
 
 		/**
 		 * @author Leo Fajardo (@leorw)
 		 * @since  1.2.2
 		 *
-		 * @param  string|false $module_type "plugin", "theme", or "false" for all modules.
+		 * @param  string|bool $module_type "plugin", "theme", or "false" for all modules.
 		 *
 		 * @return array
 		 */
@@ -83,12 +83,12 @@
 			$option_manager = $this->get_option_manager();
 
 			if ( false !== $module_type ) {
-				return $option_manager->get_option( $module_type . 's', array() );
+				return fs_get_entities( $option_manager->get_option( $module_type . 's', array() ), FS_Plugin::get_class_name() );
 			}
 
 			return array(
-				self::OPTION_NAME_PLUGINS => $option_manager->get_option( self::OPTION_NAME_PLUGINS, array() ),
-				self::OPTION_NAME_THEMES  => $option_manager->get_option( self::OPTION_NAME_THEMES, array() ),
+				self::OPTION_NAME_PLUGINS => fs_get_entities( $option_manager->get_option( self::OPTION_NAME_PLUGINS, array() ), FS_Plugin::get_class_name() ),
+				self::OPTION_NAME_THEMES  => fs_get_entities( $option_manager->get_option( self::OPTION_NAME_THEMES, array() ), FS_Plugin::get_class_name() ),
 			);
 		}
 

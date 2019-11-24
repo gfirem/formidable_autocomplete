@@ -89,6 +89,12 @@
 		 * @var bool
 		 */
 		private $_menu_exists;
+		/**
+		 * @since 2.0.0
+		 *
+		 * @var bool
+		 */
+		private $_network_menu_exists;
 
 		#endregion Properties
 
@@ -149,6 +155,7 @@
 		 */
 		function init( $menu, $is_addon = false ) {
 			$this->_menu_exists = ( isset( $menu['slug'] ) && ! empty( $menu['slug'] ) );
+			$this->_network_menu_exists = ( ! empty( $menu['network'] ) && true === $menu['network'] );
 
 			$this->_menu_slug = ( $this->_menu_exists ? $menu['slug'] : $this->_module_unique_affix );
 
@@ -161,18 +168,21 @@
 			// @deprecated
 			$this->_parent_type = 'page';
 
-			if ( ! $is_addon && isset( $menu ) ) {
-				$this->_default_submenu_items = array(
-					'contact'     => $this->get_bool_option( $menu, 'contact', true ),
-					'support'     => $this->get_bool_option( $menu, 'support', true ),
-                    'affiliation' => $this->get_bool_option( $menu, 'affiliation', true ),
-					'account'     => $this->get_bool_option( $menu, 'account', true ),
-					'pricing'     => $this->get_bool_option( $menu, 'pricing', true ),
-					'addons'      => $this->get_bool_option( $menu, 'addons', true ),
-				);
+			if ( isset( $menu ) ) {
+			    if ( ! $is_addon ) {
+                    $this->_default_submenu_items = array(
+                        'contact'     => $this->get_bool_option( $menu, 'contact', true ),
+                        'support'     => $this->get_bool_option( $menu, 'support', true ),
+                        'affiliation' => $this->get_bool_option( $menu, 'affiliation', true ),
+                        'account'     => $this->get_bool_option( $menu, 'account', true ),
+                        'pricing'     => $this->get_bool_option( $menu, 'pricing', true ),
+                        'addons'      => $this->get_bool_option( $menu, 'addons', true ),
+                    );
 
-				// @deprecated
-				$this->_type              = $this->get_option( $menu, 'type', 'page' );
+                    // @deprecated
+                    $this->_type = $this->get_option( $menu, 'type', 'page' );
+                }
+
 				$this->_is_override_exact = $this->get_bool_option( $menu, 'override_exact' );
 
 				if ( isset( $menu['parent'] ) ) {
@@ -194,10 +204,11 @@
 //					) );
 				}
 
-				$this->_first_time_path = $this->get_option( $menu, 'first-path', false );
-				if ( ! empty( $this->_first_time_path ) && is_string( $this->_first_time_path ) ) {
-					$this->_first_time_path = admin_url( $this->_first_time_path, 'admin' );
-				}
+				$first_path = $this->get_option( $menu, 'first-path', false );
+
+                if ( ! empty( $first_path ) && is_string( $first_path ) ) {
+                    $this->_first_time_path = $first_path;
+                }
 			}
 		}
 
@@ -226,17 +237,27 @@
 		}
 
 
-		/**
-		 * Get the path of the page the user should be forwarded to after first activation.
-		 *
-		 * @author Vova Feldman (@svovaf)
-		 * @since  1.1.3
-		 *
-		 * @return string
-		 */
-		function get_first_time_path() {
-			return $this->_first_time_path;
-		}
+        /**
+         * Get the path of the page the user should be forwarded to after first activation.
+         *
+         * @author Vova Feldman (@svovaf)
+         * @since  1.1.3
+         *
+         * @param bool $is_network Since 2.4.5
+         *
+         * @return string
+         */
+        function get_first_time_path( $is_network = false ) {
+            if ( empty ( $this->_first_time_path ) ) {
+                return $this->_first_time_path;
+            }
+
+            if ( $is_network ) {
+                return network_admin_url( $this->_first_time_path );
+            } else {
+                return admin_url( $this->_first_time_path );
+            }
+        }
 
 		/**
 		 * Check if plugin's menu item is part of a custom top level menu.
@@ -259,6 +280,28 @@
 		function has_menu() {
 			return $this->_menu_exists;
 		}
+
+		/**
+         * @author Vova Feldman (@svovaf)
+		 * @since  2.0.0
+		 *
+		 * @return bool
+		 */
+		function has_network_menu() {
+			return $this->_network_menu_exists;
+		}
+
+        /**
+         * @author Leo Fajardo (@leorw)
+         *
+         * @param string $menu_slug
+         *
+         * @since 2.1.3
+         */
+		function set_slug_and_network_menu_exists_flag($menu_slug ) {
+		    $this->_menu_slug           = $menu_slug;
+		    $this->_network_menu_exists = false;
+        }
 
 		/**
 		 * @author Vova Feldman (@svovaf)
@@ -387,41 +430,62 @@
 				$this->get_raw_slug();
 		}
 
-		/**
-		 * Is user on plugin's admin activation page.
-		 *
-		 * @author Vova Feldman (@svovaf)
-		 * @since  1.0.8
-		 *
-		 * @return bool
-		 */
-		function is_main_settings_page() {
-			if ( $this->_menu_exists &&
-			     ( fs_is_plugin_page( $this->_menu_slug ) || fs_is_plugin_page( $this->_module_unique_affix ) )
-			) {
-				/**
-				 * Module has a settings menu and the context page is the main settings page, so assume it's in
-				 * activation (doesn't really check if already opted-in/skipped or not).
-				 *
-				 * @since 1.2.2
-				 */
-				return true;
-			}
+        /**
+         * Is user on plugin's admin activation page.
+         *
+         * @author Vova Feldman (@svovaf)
+         * @since  1.0.8
+         *
+         * @param bool $show_opt_in_on_themes_page Since 2.3.1
+         *
+         * @return bool
+         *
+         * @deprecated Please use is_activation_page() instead.
+         */
+        function is_main_settings_page( $show_opt_in_on_themes_page = false ) {
+            return $this->is_activation_page( $show_opt_in_on_themes_page );
+        }
 
-			global $pagenow;
-			if ( ( WP_FS__MODULE_TYPE_THEME === $this->_module_type ) && Freemius::is_themes_page() ) {
-				/**
-				 * In activation only when show_optin query string param is given.
-				 *
-				 * @since 1.2.2
-				 */
-				return fs_request_get_bool( $this->_module_unique_affix . '_show_optin' );
-			}
+        /**
+         * Is user on product's admin activation page.
+         *
+         * @author Vova Feldman (@svovaf)
+         * @since  2.3.1
+         *
+         * @param bool $show_opt_in_on_themes_page Since 2.3.1
+         *
+         * @return bool
+         */
+        function is_activation_page( $show_opt_in_on_themes_page = false ) {
+            if ( $show_opt_in_on_themes_page ) {
+                /**
+                 * In activation only when show_optin query string param is given.
+                 *
+                 * @since 1.2.2
+                 */
+                return (
+                    ( WP_FS__MODULE_TYPE_THEME === $this->_module_type ) &&
+                    Freemius::is_themes_page() &&
+                    fs_request_get_bool( $this->_module_unique_affix . '_show_optin' )
+                );
+            }
 
-			return false;
-		}
+            if ( $this->_menu_exists &&
+                 ( fs_is_plugin_page( $this->_menu_slug ) || fs_is_plugin_page( $this->_module_unique_affix ) )
+            ) {
+                /**
+                 * Module has a settings menu and the context page is the main settings page, so assume it's in
+                 * activation (doesn't really check if already opted-in/skipped or not).
+                 *
+                 * @since 1.2.2
+                 */
+                return true;
+            }
 
-		#region Submenu Override
+            return false;
+        }
+
+        #region Submenu Override
 
 		/**
 		 * Override submenu's action.
@@ -588,26 +652,33 @@
 		 * @author Vova Feldman (@svovaf)
 		 * @since  1.0.9
 		 *
+         * @param bool $remove_top_level_menu
+         * 
 		 * @return false|array[string]mixed
 		 */
-		function remove_menu_item() {
-			$this->_logger->entrance();
+        function remove_menu_item( $remove_top_level_menu = false ) {
+            $this->_logger->entrance();
 
-			// Find main menu item.
-			$menu = $this->find_top_level_menu();
+            // Find main menu item.
+            $top_level_menu = $this->find_top_level_menu();
 
-			if ( false === $menu ) {
-				return false;
-			}
+            if ( false === $top_level_menu ) {
+                return false;
+            }
 
-			// Remove it with its actions.
-			remove_all_actions( $menu['hook_name'] );
+            // Remove it with its actions.
+            remove_all_actions( $top_level_menu['hook_name'] );
 
-			// Remove all submenu items.
-			$this->remove_all_submenu_items();
+            // Remove all submenu items.
+            $this->remove_all_submenu_items();
 
-			return $menu;
-		}
+            if ( $remove_top_level_menu ) {
+                global $menu;
+                unset( $menu[ $top_level_menu['position'] ] );
+            }
+
+            return $top_level_menu;
+        }
 
 		/**
 		 * Get module's main admin setting page URL.
@@ -795,6 +866,47 @@
 			);
 		}
 
+        /**
+         * Add page and update menu instance settings.
+         *
+         * @author Vova Feldman (@svovaf)
+         * @since  2.0.0
+         *
+         * @param string          $page_title
+         * @param string          $menu_title
+         * @param string          $capability
+         * @param string          $menu_slug
+         * @param callable|string $function
+         * @param string          $icon_url
+         * @param int|null        $position
+         *
+         * @return string
+         */
+		function add_page_and_update(
+            $page_title,
+            $menu_title,
+            $capability,
+            $menu_slug,
+            $function = '',
+            $icon_url = '',
+            $position = null
+        ) {
+            $this->_menu_slug           = $menu_slug;
+            $this->_is_top_level        = true;
+            $this->_menu_exists         = true;
+            $this->_network_menu_exists = true;
+
+            return self::add_page(
+                $page_title,
+                $menu_title,
+                $capability,
+                $menu_slug,
+                $function,
+                $icon_url,
+                $position
+            );
+        }
+
 		/**
 		 * Add a submenu page.
 		 *
@@ -847,4 +959,43 @@
 				$function
 			);
 		}
+
+        /**
+         * Add sub page and update menu instance settings.
+         *
+         * @author Vova Feldman (@svovaf)
+         * @since  2.0.0
+         *
+         * @param string          $parent_slug
+         * @param string          $page_title
+         * @param string          $menu_title
+         * @param string          $capability
+         * @param string          $menu_slug
+         * @param callable|string $function
+         *
+         * @return string
+         */
+        function add_subpage_and_update(
+            $parent_slug,
+            $page_title,
+            $menu_title,
+            $capability,
+            $menu_slug,
+            $function = ''
+        ) {
+            $this->_menu_slug           = $menu_slug;
+            $this->_parent_slug         = $parent_slug;
+            $this->_is_top_level        = false;
+            $this->_menu_exists         = true;
+            $this->_network_menu_exists = true;
+
+            return self::add_subpage(
+                $parent_slug,
+                $page_title,
+                $menu_title,
+                $capability,
+                $menu_slug,
+                $function
+            );
+        }
 	}

@@ -10,8 +10,7 @@
 		exit;
 	}
 
-	$fs_options      = FS_Option_Manager::get_manager( WP_FS__ACCOUNTS_OPTION_NAME, true );
-	$plugins         = $fs_options->get_option( 'plugins' );
+	$fs_options      = FS_Options::instance( WP_FS__ACCOUNTS_OPTION_NAME, true );
 	$scheduled_crons = array();
 
 	$module_types = array(
@@ -20,7 +19,7 @@
 	);
 
 	foreach ( $module_types as $module_type ) {
-		$modules = $fs_options->get_option( $module_type . 's' );
+		$modules = fs_get_entities( $fs_options->get_option( $module_type . 's' ), FS_Plugin::get_class_name() );
 		if ( is_array( $modules ) && count( $modules ) > 0 ) {
 			foreach ( $modules as $slug => $data ) {
 				if ( WP_FS__MODULE_TYPE_THEME === $module_type ) {

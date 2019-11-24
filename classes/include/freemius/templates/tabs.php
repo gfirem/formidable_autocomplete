@@ -20,11 +20,23 @@
 
     $menu_items = $fs->get_menu_items();
 
+    $show_settings_with_tabs = $fs->show_settings_with_tabs();
+
     $tabs = array();
     foreach ( $menu_items as $priority => $items ) {
         foreach ( $items as $item ) {
             if ( ! $item['show_submenu'] ) {
-                continue;
+                $submenu_name = ('wp-support-forum' === $item['menu_slug']) ?
+                    'support' :
+                    $item['menu_slug'];
+
+                if ( 'pricing' === $submenu_name && ! $fs->is_pricing_page_visible() ) {
+                    continue;
+                }
+
+                if ( ! $show_settings_with_tabs || ! $fs->is_submenu_item_visible( $submenu_name, true ) ) {
+                    continue;
+                }
             }
 
             $url   = $fs->_get_admin_page_url( $item['menu_slug'] );
