@@ -8,7 +8,7 @@
  * @wordpress-plugin
  * Plugin Name:       GFireM Autocomplete Field
  * Description:       Formidable text field with autocomplete.
- * Version:           1.1.1
+ * Version:           1.1.2
  * Author:            gfirem
  * License:           Apache License 2.0
  * License URI:       http://www.apache.org/licenses/
@@ -35,7 +35,7 @@ if ( ! class_exists( 'GFireMAutoComplete' ) ) {
 		public static $view;
 		public static $classes;
 		public static $slug = 'gfirem-autocomplete';
-		public static $version = '1.1.1';
+		public static $version = '1.1.2';
 
 		/**
 		 * Initialize the plugin.
