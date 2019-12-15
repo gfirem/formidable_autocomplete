@@ -43,6 +43,13 @@ function gfirem_autocomplete_admin() {
 		var form_id = jQuery(this).attr('data-formid');
 		var row_key = 0;
 		var lookupBlockRows = document.getElementById('fac_frm_watch_lookup_block_' + id).childNodes;
+		var existingFields = [];
+		jQuery.each(jQuery('[name="field_options[fac_watch_lookup_24][]"]'), function(){
+			var selected = jQuery(this).val();
+			if(selected) {
+				existingFields.push(selected);
+			}
+		});
 
 		if (lookupBlockRows.length > 0) {
 			var index = lookupBlockRows.length - 1;
@@ -57,7 +64,7 @@ function gfirem_autocomplete_admin() {
 
 		jQuery.ajax({
 			type: 'POST', url: ajaxurl,
-			data: {action: 'get_autocomplete_row', form_id: form_id, field_id: id, row_key: row_key, nonce: frmGlobal.nonce},
+			data: {action: 'get_autocomplete_row', form_id: form_id, field_id: id, row_key: row_key, nonce: frmGlobal.nonce, existing: existingFields},
 			success: function (newRow) {
 				jQuery(document.getElementById('frm_add_watch_lookup_link_' + id)).fadeOut('slow', function () {
 					var watchRowBlock = jQuery(document.getElementById('fac_frm_watch_lookup_block_' + id));

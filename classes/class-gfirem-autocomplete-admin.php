@@ -321,39 +321,40 @@ class GFireMAutocompleteAdmin {
 		$row_key  = FrmAppHelper::get_post_param( 'row_key', '', 'absint' );
 		$field_id = FrmAppHelper::get_post_param( 'field_id', '', 'absint' );
 		$form_id  = FrmAppHelper::get_post_param( 'form_id', '', 'absint' );
+		$existing = isset( $_POST['existing'] ) ? $_POST['existing'] : array();
 
 		$selected_field = '';
 		$current_field  = FrmField::getOne( $field_id );// Maybe (for efficiency) change this to a specific database call
 		$lookup_fields  = self::get_limited_lookup_fields_in_form( $form_id, $current_field->form_id );
 
-		$all_field_saved = true;
+		$all_field_saved      = array();
+		$available_fields_ids = array();
 		foreach ( $lookup_fields as $field_option ) {
-			$option_exist = $this->field_option_exist( $current_field->field_options['fac_watch_lookup'], $field_option->id );
-			//If at least one field have not been saved, then add the dropdown.
-			if ( ! $option_exist ) {
-				$all_field_saved = false;
-				break;
-			}
+			$available_fields_ids[] = $field_option->id;
 		}
-		//If there are fields avaliable, then show the dropdown with the avaliable options.
-		if ( ! $all_field_saved ) {
-			echo "<div id=\"fac_frm_watch_lookup_" . $field_id . '_' . $row_key . "\">";
-			echo " <select name=\"field_options[fac_watch_lookup_" . $field_id . "][]\">";
-			echo "<option value=\"\">&mdash; Select Field &mdash;</option>  ";
-			foreach ( $lookup_fields as $field_option ) {
-				$option_exist = $this->field_option_exist( $current_field->field_options['fac_watch_lookup'], $field_option->id );
-				//If the field is already saved in the options do not add it again in the dropdown, avoid duplicate options.
-				if ( $option_exist ) {
-					continue;
+		if ( is_array( $existing ) ) {
+			foreach ( $existing as $item ) {
+				if ( in_array( $item, $available_fields_ids ) ) {
+					$all_field_saved[] = $item;
 				}
-				$selected = ( $field_option->id == $selected_field ) ? ' selected="selected"' : '';
-				echo "<option value=\"$field_option->id\" $selected > $field_option->name</option>";
 			}
-			echo "</select>";
-			echo " <a href=\"javascript:void(0)\" class=\"fac_frm_remove_tag frm_icon_font\" data-removeid=\"fac_frm_watch_lookup_" . $field_id . '_' . $row_key . "\" data-fieldid=\"" . $field_id . "\"></a>";
-			echo "<a href=\"javascript:void(0)\" class=\"fac_frm_add_tag frm_icon_font fac_frm_add_watch_lookup_row\" data-fieldid=\"" . $field_id . "\" data-formid=\"" . $current_field->form_id . "\"></a>";
-			echo "</div>";
 		}
+
+		echo "<div id=\"fac_frm_watch_lookup_" . $field_id . '_' . $row_key . "\">";
+		echo " <select name=\"field_options[fac_watch_lookup_" . $field_id . "][]\">";
+		echo "<option value=\"\">&mdash; Select Field &mdash;</option>  ";
+		foreach ( $lookup_fields as $field_option ) {
+			//If the field is already saved in the options do not add it again in the dropdown, avoid duplicate options.
+			if ( in_array( $field_option->id, $all_field_saved ) ) {
+				continue;
+			}
+			$selected = ( $field_option->id == $selected_field ) ? ' selected="selected"' : '';
+			echo "<option value=\"$field_option->id\" $selected > $field_option->name</option>";
+		}
+		echo "</select>";
+		echo " <a href=\"javascript:void(0)\" class=\"fac_frm_remove_tag frm_icon_font\" data-removeid=\"fac_frm_watch_lookup_" . $field_id . '_' . $row_key . "\" data-fieldid=\"" . $field_id . "\"></a>";
+		echo "<a href=\"javascript:void(0)\" class=\"fac_frm_add_tag frm_icon_font fac_frm_add_watch_lookup_row\" data-fieldid=\"" . $field_id . "\" data-formid=\"" . $current_field->form_id . "\"></a>";
+		echo "</div>";
 		wp_die();
 	}
 
@@ -370,7 +371,10 @@ class GFireMAutocompleteAdmin {
 		return false;
 	}
 
-	public static function get_lookup_fields_for_watch_row( $field ) {
+	public
+	static function get_lookup_fields_for_watch_row(
+		$field
+	) {
 		$lookup_fields  = false;
 		$parent_form_id = isset( $field['parent_form_id'] ) ? $field['parent_form_id'] : $field['form_id'];
 		$lookup_fields  = self::get_limited_lookup_fields_in_form( $parent_form_id, $field['form_id'] );
@@ -378,7 +382,11 @@ class GFireMAutocompleteAdmin {
 		return $lookup_fields;
 	}
 
-	private static function get_limited_lookup_fields_in_form( $parent_form_id, $current_form_id ) {
+	private
+	static function get_limited_lookup_fields_in_form(
+		$parent_form_id,
+		$current_form_id
+	) {
 		$lookup_fields = false;
 		if ( $parent_form_id == $current_form_id ) {
 			// If the current field's form ID matches $form_id, only get fields in that form (not embedded or repeating)
@@ -400,7 +408,10 @@ class GFireMAutocompleteAdmin {
 	 *
 	 * @return array
 	 */
-	public static function get_dependant_fields( $field ) {
+	public
+	static function get_dependant_fields(
+		$field
+	) {
 		$result         = array();
 		$parent_form_id = isset( $field['parent_form_id'] ) ? $field['parent_form_id'] : $field['form_id'];
 
@@ -444,7 +455,11 @@ class GFireMAutocompleteAdmin {
 		return $result;
 	}
 
-	private static function maybe_initialize_frm_vars_lookup_fields_for_id( $field_id, &$frm_vars ) {
+	private
+	static function maybe_initialize_frm_vars_lookup_fields_for_id(
+		$field_id,
+		&$frm_vars
+	) {
 		if ( ! isset( $frm_vars[ $field_id ] ) ) {
 			$frm_vars[ $field_id ] = array(
 				'dependents' => array()
